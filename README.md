@@ -6,7 +6,7 @@ The owner logs in to an admin panel to manage properties, photos and leads.
 
 - **Frontend:** React (Vite) + React Router, plain CSS. No UI framework.
 - **Backend:** Python, FastAPI, SQLAlchemy 2, Alembic, Pydantic.
-- **Database:** XAMPP MySQL/MariaDB locally. SQLite and PostgreSQL also work: change only `DATABASE_URL` in `backend/.env`.
+- **Database:** PostgreSQL/Neon for hosting. XAMPP MySQL/MariaDB and SQLite also work locally by changing only `DATABASE_URL` in `backend/.env`.
 - **Auth:** JWT for the admin, passwords hashed with argon2.
 
 ```
@@ -19,7 +19,7 @@ real_estate/
 
 ## 1. Backend setup (Windows)
 
-You need Python 3.11+ and XAMPP. Start **MySQL** in the XAMPP control panel and create an empty database
+You need Python 3.11+. For Neon hosting, create a free Neon Postgres database and paste its connection string into `backend/.env`. For local XAMPP development, start **MySQL** in the XAMPP control panel and create an empty database
 named `real_estate` (phpMyAdmin → Databases → Create). Apache is not needed.
 
 ```powershell
@@ -38,7 +38,7 @@ uvicorn app.main:app --reload   # API on http://127.0.0.1:8000, docs on /docs
 
 | Variable | What it does |
 |---|---|
-| `DATABASE_URL` | Database. XAMPP: `mysql+pymysql://root:@localhost:3306/real_estate?charset=utf8mb4`. SQLite: `sqlite:///./devsphere.db`. PostgreSQL: `postgresql+psycopg://user:pass@host:5432/dbname` |
+| `DATABASE_URL` | Database. Neon/PostgreSQL: paste Neon's URL directly, or use `postgresql+psycopg://user:pass@host:5432/dbname?sslmode=require`. XAMPP: `mysql+pymysql://root:@localhost:3306/real_estate?charset=utf8mb4`. SQLite: `sqlite:///./devsphere.db` |
 | `JWT_SECRET` | Long random secret that signs login tokens. Never share or commit it. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | How long an admin login lasts (default 480 = 8 hours) |
 | `CORS_ORIGINS` | Website addresses allowed to call the API, comma separated |
@@ -157,7 +157,7 @@ Photo storage lives in one module, `backend/app/services/storage.py`, so it can 
 ## Troubleshooting
 
 - **`python` is not recognised on Windows:** use `py` instead (`py -m venv .venv`).
-- **Backend cannot connect to the database:** start MySQL in XAMPP and check the database name in `DATABASE_URL`.
+- **Backend cannot connect to the database:** check `DATABASE_URL`. For Neon, include `?sslmode=require`; for XAMPP, start MySQL and check the database name.
 - **Website shows "Cannot reach the server":** the backend is not running, or `VITE_API_URL` in `frontend/.env`
   is wrong. Restart `npm run dev` after changing `.env`.
 - **Browser blocks requests (CORS):** add the website address to `CORS_ORIGINS` in `backend/.env` and restart the API.
