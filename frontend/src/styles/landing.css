@@ -1,0 +1,713 @@
+/* ============================================================================
+   Landing page: animated hero scene, reveal-on-scroll, counters, tiles, marquee.
+   Every animation is switched off for visitors who prefer reduced motion (see base.css).
+   ========================================================================== */
+
+/* ---------- Scene colours (light / dark) ---------- */
+:root {
+  --hero-top: #e3eeea;
+  --scene-back: #cadcd8;
+  --scene-front: #a4c5c1;
+  --scene-road: #8aaca8;
+  --scene-lane: #f6f4ee;
+  --window-lit: #f2c35f;
+  --orb: rgba(232, 163, 61, 0.5);
+  --cloud: rgba(255, 255, 255, 0.95);
+  --stars-display: none;
+  --car: #e8a33d;
+  --car-win: #0f3a3e;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --hero-top: #0d2a2e;
+    --scene-back: #10292c;
+    --scene-front: #17393d;
+    --scene-road: #09191b;
+    --scene-lane: #2e5c61;
+    --window-lit: #f0b84a;
+    --orb: rgba(150, 195, 255, 0.4);
+    --cloud: rgba(130, 180, 185, 0.12);
+    --stars-display: block;
+    --car-win: #0a1819;
+  }
+}
+:root[data-theme='dark'] {
+  --hero-top: #0d2a2e;
+  --scene-back: #10292c;
+  --scene-front: #17393d;
+  --scene-road: #09191b;
+  --scene-lane: #2e5c61;
+  --window-lit: #f0b84a;
+  --orb: rgba(150, 195, 255, 0.4);
+  --cloud: rgba(130, 180, 185, 0.12);
+  --stars-display: block;
+  --car-win: #0a1819;
+}
+
+/* ---------- Reveal on scroll ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease var(--delay, 0ms), transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--delay, 0ms);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+.grid > .reveal {
+  display: flex;
+}
+.grid > .reveal > .card {
+  flex: 1;
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise-in {
+  opacity: 0;
+  animation: riseIn 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms) forwards;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  background: linear-gradient(180deg, var(--hero-top) 0%, var(--bg) 78%);
+}
+.hero-grid {
+  padding-bottom: clamp(185px, 21vw, 300px);
+}
+.hero-sky {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-orb {
+  position: absolute;
+  right: 10%;
+  top: -70px;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--orb) 0%, transparent 66%);
+  animation: orbGlow 7s ease-in-out infinite alternate;
+}
+@keyframes orbGlow {
+  from {
+    transform: scale(0.92);
+    opacity: 0.75;
+  }
+  to {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+.cloud {
+  position: absolute;
+  left: 0;
+  width: 120px;
+  height: 34px;
+  border-radius: 999px;
+  background: var(--cloud);
+  animation: drift linear infinite;
+}
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: inherit;
+}
+.cloud::before {
+  width: 56px;
+  height: 56px;
+  left: 20px;
+  top: -26px;
+}
+.cloud::after {
+  width: 72px;
+  height: 72px;
+  left: 50px;
+  top: -38px;
+}
+.cloud-1 {
+  top: 15%;
+  animation-duration: 85s;
+  animation-delay: -30s;
+}
+.cloud-2 {
+  top: 30%;
+  scale: 0.7;
+  animation-duration: 120s;
+  animation-delay: -80s;
+}
+.cloud-3 {
+  top: 7%;
+  scale: 0.5;
+  animation-duration: 150s;
+  animation-delay: -12s;
+}
+@keyframes drift {
+  from {
+    transform: translateX(-220px);
+  }
+  to {
+    transform: translateX(calc(100vw + 220px));
+  }
+}
+.star {
+  display: var(--stars-display);
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #fff;
+  animation: starTwinkle 3.2s ease-in-out infinite;
+}
+@keyframes starTwinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.hl {
+  background-image: linear-gradient(transparent 64%, color-mix(in srgb, var(--accent) 60%, transparent) 64%);
+  background-repeat: no-repeat;
+  background-size: 0 100%;
+  animation: sweep 1s cubic-bezier(0.2, 0.7, 0.2, 1) 0.9s forwards;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+@keyframes sweep {
+  to {
+    background-size: 100% 100%;
+  }
+}
+.hero-rotate {
+  margin: 0 0 10px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.rot-word {
+  display: inline-block;
+  color: var(--brand);
+  border-bottom: 3px solid var(--accent);
+  line-height: 1.15;
+  animation: wordIn 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+@keyframes wordIn {
+  from {
+    opacity: 0;
+    transform: translateY(70%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.btn-lg {
+  min-height: 52px;
+  padding: 0 26px;
+  font-size: 1.05rem;
+}
+.hero-cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+.hero-cta .btn-primary svg {
+  transition: transform 0.2s;
+}
+.hero-cta .btn-primary:hover svg {
+  transform: translateX(4px);
+}
+
+.hero-side {
+  position: relative;
+}
+.float-chip {
+  display: none;
+  position: absolute;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--ink);
+  white-space: nowrap;
+  animation: floatY 5s ease-in-out infinite alternate;
+}
+.float-chip svg {
+  color: var(--brand);
+}
+.chip-a {
+  top: -20px;
+  right: -10px;
+}
+.chip-b {
+  bottom: -20px;
+  left: -14px;
+  animation-delay: -2.4s;
+}
+@keyframes floatY {
+  from {
+    transform: translateY(-7px);
+  }
+  to {
+    transform: translateY(7px);
+  }
+}
+@media (min-width: 1000px) {
+  .float-chip {
+    display: inline-flex;
+  }
+}
+
+/* ---------- Photo skyline (building and room photos) ---------- */
+.photo-strip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+.strip-panels {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+  padding-inline: 2px;
+}
+.strip-panel {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 92px;
+  height: clamp(calc(var(--h) * 0.5px), calc(var(--h) / 14.4 * 1vw), calc(var(--h) * 1px));
+  margin: 0;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+  background: var(--scene-front);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.12);
+  transform-origin: 50% 100%;
+  animation: panelRise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.strip-panel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.strip-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(11, 93, 99, 0.12) 0%, rgba(8, 30, 33, 0.38) 100%);
+  transition: opacity 0.35s;
+}
+.strip-panel:hover img {
+  transform: scale(1.07);
+}
+.strip-panel:hover::after {
+  opacity: 0.2;
+}
+@keyframes panelRise {
+  from {
+    transform: translateY(46px) scaleY(0.88);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+/* ---------- Stats strip ---------- */
+.stats-strip {
+  position: relative;
+  z-index: 2;
+  margin-top: 28px;
+}
+.stats-card {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 8px;
+  padding: 22px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+}
+.stat-num {
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  line-height: 1.1;
+  color: var(--brand);
+}
+.stat-word {
+  font-size: clamp(1.4rem, 4.6vw, 2rem);
+  padding-top: 0.45rem;
+}
+.stat-text {
+  color: var(--ink-soft);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+@media (min-width: 760px) {
+  .stats-card {
+    grid-template-columns: repeat(4, 1fr);
+    padding: 26px 20px;
+  }
+  .stat-item + .stat-item {
+    border-left: 1px solid var(--line);
+  }
+}
+
+/* ---------- Browse by type ---------- */
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.type-grid > .reveal {
+  display: flex;
+}
+.type-grid > .reveal:last-child {
+  grid-column: span 2;
+}
+@media (min-width: 760px) {
+  .type-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .type-grid > .reveal:last-child {
+    grid-column: auto;
+  }
+}
+.type-tile {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.type-tile:hover,
+.type-tile:focus-visible {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
+  border-color: var(--brand);
+}
+.type-art {
+  display: block;
+  aspect-ratio: 16 / 11;
+  overflow: hidden;
+  background: var(--art-sky);
+}
+.type-art svg {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.type-tile:hover .type-art svg {
+  transform: scale(1.1);
+}
+.type-name {
+  padding: 12px 14px 0;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1.15rem;
+}
+.type-sub {
+  padding: 2px 14px 14px;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
+
+/* ---------- Why us ---------- */
+.why-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 640px) {
+  .why-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1000px) {
+  .why-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.why-card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+}
+.why-card.is-visible:hover {
+  transform: translateY(-5px);
+  border-color: var(--brand);
+  box-shadow: var(--shadow);
+}
+.why-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+.why-card p {
+  margin: 0;
+  color: var(--ink-soft);
+}
+.why-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  transition: background 0.25s, color 0.25s, transform 0.25s;
+}
+.why-card:hover .why-icon {
+  background: var(--brand);
+  color: var(--on-brand);
+  transform: rotate(-6deg) scale(1.06);
+}
+
+/* ---------- Locality marquee ---------- */
+.marquee-section {
+  padding: 48px 0 0;
+  overflow: hidden;
+}
+.marquee-title {
+  margin-bottom: 14px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.marquee {
+  display: flex;
+  overflow: hidden;
+  padding: 6px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+.marquee-track {
+  display: flex;
+  flex: none;
+  gap: 12px;
+  padding-right: 12px;
+  list-style: none;
+  animation: marquee 45s linear infinite;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  to {
+    transform: translateX(-100%);
+  }
+}
+.marquee-track a {
+  display: inline-block;
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.marquee-track a:hover {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--on-brand);
+}
+
+/* ---------- How we work ---------- */
+.how {
+  padding-top: 56px;
+}
+.steps-line .step-num {
+  position: relative;
+}
+.steps-line .step-num::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--brand);
+  opacity: 0;
+  animation: ringOut 2.8s ease-out infinite;
+}
+.steps-line li:nth-child(2) .step-num::after {
+  animation-delay: 0.9s;
+}
+.steps-line li:nth-child(3) .step-num::after {
+  animation-delay: 1.8s;
+}
+@keyframes ringOut {
+  from {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* ---------- Call to action ---------- */
+.cta-band {
+  position: relative;
+  overflow: hidden;
+}
+.cta-inner {
+  position: relative;
+  z-index: 1;
+}
+.cta-blob {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  animation: blobFloat 9s ease-in-out infinite alternate;
+}
+.cta-blob-1 {
+  width: 260px;
+  height: 260px;
+  left: -70px;
+  top: -90px;
+}
+.cta-blob-2 {
+  width: 200px;
+  height: 200px;
+  right: 6%;
+  bottom: -90px;
+  animation-delay: -4s;
+}
+@keyframes blobFloat {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(24px, -18px) scale(1.12);
+  }
+}
+.cta-pulse {
+  position: relative;
+}
+.cta-pulse::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 15px;
+  border: 2px solid #2fbf71;
+  animation: pulseRing 2.2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes pulseRing {
+  from {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.14, 1.4);
+  }
+}
+
+/* ---------- Floating WhatsApp button ---------- */
+.wa-float {
+  position: fixed;
+  right: 16px;
+  bottom: 18px;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--wa);
+  color: var(--on-wa);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, background 0.2s;
+}
+.wa-float:hover {
+  background: var(--wa-hover);
+  transform: scale(1.08);
+}
+.wa-float::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid var(--wa);
+  animation: pulseRing 2.6s ease-out infinite;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .wa-float {
+    width: 52px;
+    height: 52px;
+    right: 12px;
+    bottom: 14px;
+  }
+}
+
+/* Keep the street scene inside the first screen on desktop */
+@media (min-width: 900px) {
+  .hero {
+    padding-top: 30px;
+  }
+}
+
+/* On desktop the hero fills the first screen: the street scene sits at the bottom edge and the
+   stats card starts below the fold. Content is centred in the space above the photos. */
+@media (min-width: 900px) {
+  .hero {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100svh - 66px);
+  }
+  .hero-grid {
+    flex: 1;
+    align-content: center;
+  }
+}

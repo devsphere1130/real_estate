@@ -1,0 +1,574 @@
+/* ============================================================================
+   The deal story on the street under the photo skyline (one 18s loop).
+   Markup: components/DealScene.jsx.   Percentages below are seconds / 18:
+     3.2s=17.78%   5.4s=30%   6s=33.33%   8s=44.44%   9.6s=53.33%   10.4s=57.78%
+     12s=66.67%    13s=72.2%  17s=94.44%
+   ========================================================================== */
+
+/* ---------- Colours (light, then dark) ---------- */
+:root {
+  --scene-walk: #cddfdb;
+  --scene-curb: #b5cdc8;
+  --actor-edge: rgba(0, 0, 0, 0.28);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --scene-walk: #112a2d;
+    --scene-curb: #1d484d;
+    --actor-edge: rgba(255, 255, 255, 0.32);
+  }
+}
+:root[data-theme='dark'] {
+  --scene-walk: #112a2d;
+  --scene-curb: #1d484d;
+  --actor-edge: rgba(255, 255, 255, 0.32);
+}
+
+.deal-scene {
+  display: block;
+  width: 100%;
+  height: clamp(72px, 8.6vw, 125px);
+  overflow: visible; /* the badge pops up above the scene */
+  position: relative; /* paint in front of the photo panels */
+  z-index: 1;
+}
+.deal-walk {
+  fill: var(--scene-walk);
+}
+.deal-curb {
+  fill: var(--scene-curb);
+}
+.deal-road {
+  fill: var(--scene-road);
+}
+.deal-lane {
+  fill: var(--scene-lane);
+  opacity: 0.7;
+}
+
+/* ---------- People ---------- */
+.deal-scene .skin {
+  fill: #dca77c;
+}
+.deal-scene .edge {
+  stroke: var(--actor-edge);
+  stroke-width: 0.7;
+}
+.deal-scene .shoe {
+  fill: #17110d;
+}
+.deal-scene .eye {
+  fill: #20150e;
+}
+.deal-scene .client-suit {
+  fill: #2b4a8a;
+}
+.deal-scene .client-pants {
+  fill: #18284a;
+}
+.deal-scene .shirt {
+  fill: #f6f6f2;
+}
+.deal-scene .tie {
+  fill: #e8a33d;
+}
+.deal-scene .hair-client {
+  fill: #1b1511;
+}
+.deal-scene .owner-shirt {
+  fill: #f3eee2;
+}
+.deal-scene .owner-vest {
+  fill: #0f7a74;
+}
+.deal-scene .owner-pants {
+  fill: #6c533b;
+}
+.deal-scene .hair-owner,
+.deal-scene .moustache {
+  fill: #b3b8bd;
+}
+.deal-shadow {
+  fill: rgba(0, 0, 0, 0.28);
+}
+.deal-label rect {
+  fill: var(--surface);
+  stroke: var(--line);
+}
+.deal-label text {
+  fill: var(--ink);
+  font: 700 11px var(--font-body);
+}
+
+/* ---------- Car ---------- */
+.deal-car .car-body {
+  fill: var(--car);
+}
+.deal-car .car-glass {
+  fill: var(--car-win);
+  opacity: 0.9;
+}
+.deal-car .car-door {
+  fill: rgba(0, 0, 0, 0.25);
+}
+.deal-car .car-light {
+  fill: #fff7cf;
+}
+.deal-car .car-wheel {
+  fill: #12100f;
+}
+.deal-car .car-hub {
+  fill: #b9c2c6;
+}
+
+/* ---------- Suitcase, badge, sparkles ---------- */
+.deal-case .case-rupee {
+  fill: #e8a33d;
+  font: 800 15px var(--font-body);
+}
+.deal-badge rect {
+  fill: #0b5d63;
+}
+.deal-badge .badge-dot {
+  fill: #2fbf71;
+}
+.deal-badge text {
+  fill: #fff;
+  font: 800 14px var(--font-body);
+}
+.deal-sparkles .spark {
+  fill: #e8a33d;
+}
+
+/* ---------- Timeline: who plays which keyframes ---------- */
+.deal-car {
+  animation: dealCar 18s linear infinite;
+}
+.deal-client {
+  animation: dealClient 18s linear infinite;
+}
+.deal-owner {
+  animation: dealOwner 18s linear infinite;
+}
+.deal-case {
+  animation: dealCase 18s linear infinite;
+}
+.flip-client {
+  animation: flipClient 18s linear infinite;
+}
+.flip-owner {
+  animation: flipOwner 18s linear infinite;
+}
+.legs-walk-client {
+  animation: clientWalkOn 18s linear infinite;
+}
+.legs-stand-client {
+  animation: clientWalkOff 18s linear infinite;
+}
+.legs-walk-owner {
+  animation: ownerWalkOn 18s linear infinite;
+}
+.legs-stand-owner {
+  animation: ownerWalkOff 18s linear infinite;
+}
+.arm {
+  transform-origin: 0 -48px;
+}
+.arm-client {
+  animation: clientArm 18s linear infinite;
+}
+.arm-owner {
+  animation: ownerArm 18s linear infinite;
+}
+.leg {
+  transform-origin: 0 -28px;
+}
+.leg-a {
+  animation: legA 0.7s ease-in-out infinite alternate;
+}
+.leg-b {
+  animation: legB 0.7s ease-in-out infinite alternate;
+}
+.deal-owner .leg-a,
+.deal-owner .leg-b {
+  animation-duration: 0.46s;
+}
+.deal-label {
+  animation: dealLabel 18s linear infinite;
+}
+.case-lid {
+  transform-origin: -14px 7px;
+  animation: caseLid 18s linear infinite;
+}
+.case-bills {
+  animation: caseBills 18s linear infinite;
+}
+.case-rupee {
+  animation: caseRupee 18s linear infinite;
+}
+.deal-badge {
+  animation: dealBadge 18s linear infinite;
+}
+.deal-sparkles {
+  animation: dealWindow 18s linear infinite;
+}
+.spark {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: spark 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes dealCar {
+  0% {
+    transform: translateX(-230px);
+    animation-timing-function: cubic-bezier(0.15, 0.75, 0.25, 1);
+  }
+  17.78% {
+    transform: translateX(500px);
+  }
+  74.44% {
+    transform: translateX(500px);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5);
+  }
+  94.44%,
+  100% {
+    transform: translateX(1700px);
+  }
+}
+@keyframes dealClient {
+  0%,
+  20.4% {
+    transform: translateX(560px);
+    opacity: 0;
+  }
+  21.2% {
+    transform: translateX(560px);
+    opacity: 1;
+  }
+  30% {
+    transform: translateX(676px);
+    opacity: 1;
+  }
+  66.1% {
+    transform: translateX(676px);
+    opacity: 1;
+  }
+  72.2% {
+    transform: translateX(560px);
+    opacity: 1;
+  }
+  73.3%,
+  100% {
+    transform: translateX(560px);
+    opacity: 0;
+  }
+}
+@keyframes dealOwner {
+  0% {
+    transform: translateX(1500px);
+  }
+  30%,
+  67.77% {
+    transform: translateX(764px);
+  }
+  95.56%,
+  100% {
+    transform: translateX(1500px);
+  }
+}
+@keyframes flipClient {
+  0%,
+  66.1% {
+    transform: scaleX(1);
+  }
+  66.11%,
+  100% {
+    transform: scaleX(-1);
+  }
+}
+@keyframes flipOwner {
+  0%,
+  67.77% {
+    transform: scaleX(-1);
+  }
+  67.78%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+@keyframes clientWalkOn {
+  0%,
+  21.1% {
+    opacity: 0;
+  }
+  21.2%,
+  30% {
+    opacity: 1;
+  }
+  30.01%,
+  66.1% {
+    opacity: 0;
+  }
+  66.11%,
+  72.2% {
+    opacity: 1;
+  }
+  72.21%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes clientWalkOff {
+  0%,
+  21.1% {
+    opacity: 1;
+  }
+  21.2%,
+  30% {
+    opacity: 0;
+  }
+  30.01%,
+  66.1% {
+    opacity: 1;
+  }
+  66.11%,
+  72.2% {
+    opacity: 0;
+  }
+  72.21%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes ownerWalkOn {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  30.01%,
+  67.77% {
+    opacity: 0;
+  }
+  67.78%,
+  95.56% {
+    opacity: 1;
+  }
+  95.57%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes ownerWalkOff {
+  0%,
+  30% {
+    opacity: 0;
+  }
+  30.01%,
+  67.77% {
+    opacity: 1;
+  }
+  67.78%,
+  95.56% {
+    opacity: 0;
+  }
+  95.57%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes clientArm {
+  0%,
+  45.56% {
+    transform: rotate(-10deg);
+  }
+  47.78%,
+  54.44% {
+    transform: rotate(-88deg);
+  }
+  57.22%,
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes ownerArm {
+  0%,
+  46.67% {
+    transform: rotate(-10deg);
+  }
+  48.89%,
+  54.44% {
+    transform: rotate(-88deg);
+  }
+  57.22%,
+  100% {
+    transform: rotate(-10deg);
+  }
+}
+@keyframes legA {
+  from {
+    transform: rotate(24deg);
+  }
+  to {
+    transform: rotate(-24deg);
+  }
+}
+@keyframes legB {
+  from {
+    transform: rotate(-24deg);
+  }
+  to {
+    transform: rotate(24deg);
+  }
+}
+@keyframes dealCase {
+  0%,
+  20.9% {
+    transform: translate(564px, -24px);
+    opacity: 0;
+  }
+  21.2% {
+    transform: translate(564px, -24px);
+    opacity: 1;
+  }
+  30%,
+  45.56% {
+    transform: translate(680px, -24px);
+    opacity: 1;
+  }
+  47.78% {
+    transform: translate(699px, -46px);
+    opacity: 1;
+  }
+  53.33%,
+  54.44% {
+    transform: translate(741px, -46px);
+    opacity: 1;
+  }
+  57.22%,
+  67.77% {
+    transform: translate(760px, -24px);
+    opacity: 1;
+  }
+  67.78% {
+    transform: translate(768px, -24px);
+    opacity: 1;
+  }
+  95.56% {
+    transform: translate(1504px, -24px);
+    opacity: 1;
+  }
+  96.67%,
+  100% {
+    transform: translate(1504px, -24px);
+    opacity: 0;
+  }
+}
+@keyframes caseLid {
+  0%,
+  33.33% {
+    transform: rotate(0deg);
+  }
+  36.11%,
+  42.22% {
+    transform: rotate(-72deg);
+  }
+  44.44%,
+  100% {
+    transform: rotate(0deg);
+  }
+}
+@keyframes caseBills {
+  0%,
+  33.33% {
+    opacity: 0;
+  }
+  34.5%,
+  42.5% {
+    opacity: 1;
+  }
+  43.5%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes caseRupee {
+  0%,
+  34% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  36%,
+  42% {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+  43.5%,
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+@keyframes dealLabel {
+  0%,
+  30.5% {
+    opacity: 0;
+  }
+  32%,
+  64% {
+    opacity: 1;
+  }
+  65.6%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes dealBadge {
+  0%,
+  57.7% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  59.2% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+  60.4%,
+  65.2% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  66.6%,
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+@keyframes dealWindow {
+  0%,
+  57.7% {
+    opacity: 0;
+  }
+  59%,
+  65.2% {
+    opacity: 1;
+  }
+  66.6%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes spark {
+  from {
+    transform: scale(0.5) rotate(0deg);
+  }
+  to {
+    transform: scale(1.25) rotate(25deg);
+  }
+}
+
+/* People, car and case only appear when motion is allowed */
+@media (prefers-reduced-motion: reduce) {
+  .deal-anim {
+    display: none;
+  }
+}
