@@ -7,7 +7,7 @@ The site has two parts that you host separately:
 
 Use HTTPS for both. The admin login token travels in every admin request.
 
-> Local development uses XAMPP MySQL. The same code runs on PostgreSQL by changing only `DATABASE_URL`.
+> Hosted deployment should use PostgreSQL/Neon. Local development can still use XAMPP MySQL by changing only `DATABASE_URL`.
 > The migration uses no database-specific features and the tests run on SQLite, but this project has
 > **not been run against PostgreSQL here**, so do a quick check after deploying (steps 4 and 5 below).
 
@@ -15,16 +15,20 @@ Use HTTPS for both. The admin login token travels in every admin request.
 
 ## A. Backend
 
-### 1. Create a PostgreSQL database
-Most hosts (Render, Railway, Neon, Supabase, a VPS) give you a connection string. Convert it to:
+### 1. Create a Neon PostgreSQL database
+Create a free Neon project and copy the pooled or direct connection string. The app accepts Neon URLs like:
 ```
-postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME
+postgresql://USER:PASSWORD@HOST/DBNAME?sslmode=require
+```
+It also accepts SQLAlchemy's explicit driver form:
+```
+postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME?sslmode=require
 ```
 
 ### 2. Set environment variables on the host
 | Variable | Production value |
 |---|---|
-| `DATABASE_URL` | the PostgreSQL URL above |
+| `DATABASE_URL` | your Neon PostgreSQL URL, including `sslmode=require` |
 | `JWT_SECRET` | a new long random value: `python -c "import secrets; print(secrets.token_urlsafe(48))"` |
 | `CORS_ORIGINS` | your website address exactly, e.g. `https://www.yourdomain.com` |
 | `DOCS_ENABLED` | `false` |
