@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin
+Allow: /
+
+# Replace with your real domain, then run the sitemap script (see DEPLOYMENT.md)
+Sitemap: https://www.example.com/sitemap.xml
