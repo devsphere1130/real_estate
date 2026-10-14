@@ -32,4 +32,4 @@ class LocalStorage:
 
 @lru_cache
 def get_storage() -> LocalStorage:
-    return LocalStorage(Path(get_settings().upload_dir))
+    return LocalStorage(get_settings().resolved_upload_dir)

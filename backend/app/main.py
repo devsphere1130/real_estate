@@ -1,5 +1,4 @@
 import logging
-from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,10 +51,14 @@ async def unexpected_error(request: Request, exc: Exception):
     logger.exception("Unhandled error on %s %s", request.method, request.url.path, exc_info=exc)
     return JSONResponse({"detail": "Something went wrong on our side. Please try again."}, status_code=500)
 
-
-upload_dir = Path(settings.upload_dir)
+upload_dir = settings.resolved_upload_dir
 upload_dir.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
+
+app.mount(
+    "/uploads",
+    StaticFiles(directory=upload_dir),
+    name="uploads",
+)
 
 for router in (
     auth.router,

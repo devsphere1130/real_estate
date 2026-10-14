@@ -25,7 +25,7 @@ def png(name="a.png"):
 
 
 def upload_dir() -> Path:
-    return Path(get_settings().upload_dir)
+    return get_settings().resolved_upload_dir
 
 
 def photos_of(client, headers, lid):
