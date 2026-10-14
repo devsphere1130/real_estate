@@ -1,4 +1,6 @@
 from functools import lru_cache
+import os
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -31,6 +33,13 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def resolved_upload_dir(self) -> Path:
+        # Vercel serverless functions can only write to /tmp.
+        if os.getenv("VERCEL"):
+            return Path("/tmp/uploads")
+        return Path(self.upload_dir)
 
 
 @lru_cache
