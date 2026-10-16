@@ -8,7 +8,7 @@ from app.models import Listing, ListingPhoto
 from app.schemas.listing import ListingDetail, ReorderIn
 from app.services.images import InvalidImage, detect_extension
 from app.services.listings import to_detail
-from app.services.storage import get_storage
+from app.services.storage import StorageError, get_storage
 
 router = APIRouter(
     prefix="/api/admin/listings/{listing_id}/photos",
@@ -70,12 +70,24 @@ def upload_photos(
 
     storage = get_storage()
     next_order = max((p.sort_order for p in listing.photos), default=-1) + 1
-    for offset, (data, ext) in enumerate(validated):
-        listing.photos.append(
-            ListingPhoto(file_path=storage.save(data, ext), sort_order=next_order + offset)
-        )
-    _renumber(listing)
-    db.commit()
+    saved: list[str] = []
+    try:
+        for offset, (data, ext) in enumerate(validated):
+            key = storage.save(data, ext)
+            saved.append(key)
+            listing.photos.append(ListingPhoto(file_path=key, sort_order=next_order + offset))
+        _renumber(listing)
+        db.commit()
+    except StorageError as exc:
+        db.rollback()
+        for key in saved:  # do not leave the photos that did upload orphaned in storage
+            storage.delete(key)
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(exc)) from exc
+    except Exception:
+        db.rollback()
+        for key in saved:
+            storage.delete(key)
+        raise
     return to_detail(_get_listing(db, listing_id))
 
 

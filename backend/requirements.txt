@@ -9,6 +9,7 @@ argon2-cffi>=23.1
 pyjwt>=2.9
 python-multipart>=0.0.9
 pillow>=10.4
+cloudinary>=1.40
 python-dotenv>=1.0
 psycopg[binary]>=3.2
 pymysql>=1.1

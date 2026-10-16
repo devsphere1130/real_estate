@@ -60,8 +60,8 @@ export const api = {
   post: (path, body) => request('POST', path, { body }),
 }
 
-/** Photo URLs from the API are paths like /uploads/abc.jpg. */
-export const assetUrl = (path) => (path ? BASE + path : null)
+/** Photo URLs from the API are paths like /uploads/abc.jpg (local) or full https:// URLs (Cloudinary). */
+export const assetUrl = (path) => (path ? (path.startsWith('http') ? path : BASE + path) : null)
 
 export const listingsApi = {
   list: (params, signal) => api.get('/api/listings', params, signal),

@@ -6,6 +6,7 @@ import { useFetch } from '../hooks/useFetch'
 import { formatPrice, typeLabel } from '../utils/format'
 import { useSeo } from '../utils/seo'
 import { adminApi } from './adminApi'
+import { prepareImage } from './compressImage'
 import ConfirmDialog from './ConfirmDialog'
 import PhotoGrid from './PhotoGrid'
 import { useToast } from './Toast'
@@ -14,7 +15,7 @@ const FACING = ['North', 'South', 'East', 'West', 'North-East', 'North-West', 'S
 const FURNISHING = ['unfurnished', 'semi-furnished', 'furnished']
 const AMENITY_SUGGESTIONS = ['Lift', 'Parking', 'Power backup', '24x7 water', 'Security', 'CCTV', 'Gym', 'Garden', 'Club house', 'Swimming pool']
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
-const MAX_MB = 8
+const MAX_ORIGINAL_MB = 40 // big phone photos are fine: they are shrunk in the browser before upload
 const MAX_PHOTOS = 20
 
 const EMPTY = {
@@ -105,7 +106,7 @@ function checkFiles(fileList, existingCount) {
   const problems = []
   for (const file of Array.from(fileList)) {
     if (!ALLOWED_TYPES.includes(file.type)) problems.push(`${file.name}: only jpg, png and webp images are allowed.`)
-    else if (file.size > MAX_MB * 1024 * 1024) problems.push(`${file.name}: larger than ${MAX_MB} MB.`)
+    else if (file.size > MAX_ORIGINAL_MB * 1024 * 1024) problems.push(`${file.name}: larger than ${MAX_ORIGINAL_MB} MB.`)
     else if (existingCount + ok.length >= MAX_PHOTOS) problems.push(`${file.name}: a property can have at most ${MAX_PHOTOS} photos.`)
     else ok.push(file)
   }
@@ -130,6 +131,7 @@ function FormBody({ listing }) {
   const [pending, setPending] = useState([]) // chosen files not yet uploaded (add mode)
   const [photoProblems, setPhotoProblems] = useState([])
   const [photoBusy, setPhotoBusy] = useState(false)
+  const [photoStatus, setPhotoStatus] = useState('')
   const [photoToRemove, setPhotoToRemove] = useState(null)
   const [dragOver, setDragOver] = useState(false)
   const pendingRef = useRef(pending)
@@ -178,19 +180,40 @@ function FormBody({ listing }) {
     const { ok, problems } = checkFiles(fileList, isEdit ? photos.length : pending.length)
     setPhotoProblems(problems)
     if (ok.length === 0) return
-    if (isEdit) {
-      setPhotoBusy(true)
-      try {
-        const updated = await adminApi.uploadPhotos(listing.id, ok)
-        setPhotos(updated.photos)
-        notify(`${ok.length} ${ok.length === 1 ? 'photo' : 'photos'} uploaded.`)
-      } catch (err) {
-        setPhotoProblems([err.message])
-      } finally {
-        setPhotoBusy(false)
+
+    setPhotoBusy(true)
+    setPhotoStatus('Preparing photos…')
+    try {
+      // Big phone photos are shrunk first: one request to the server must stay under ~4.5 MB.
+      const ready = []
+      for (const file of ok) ready.push(await prepareImage(file))
+
+      if (isEdit) {
+        // One photo per request, so a single bad or slow photo cannot spoil the rest.
+        const failed = []
+        let uploaded = 0
+        for (let i = 0; i < ready.length; i++) {
+          setPhotoStatus(`Uploading ${i + 1} of ${ready.length}…`)
+          try {
+            const updated = await adminApi.uploadPhotos(listing.id, [ready[i]])
+            setPhotos(updated.photos)
+            uploaded++
+          } catch (err) {
+            failed.push(`${ok[i].name}: ${err.message}`)
+            if (err.status === 401) break
+          }
+        }
+        if (uploaded) notify(`${uploaded} ${uploaded === 1 ? 'photo' : 'photos'} uploaded.`)
+        if (failed.length) setPhotoProblems((existing) => [...existing, ...failed])
+      } else {
+        setPending((p) => [
+          ...p,
+          ...ready.map((file) => ({ key: `${file.name}-${file.size}-${Math.random()}`, file, url: URL.createObjectURL(file) })),
+        ])
       }
-    } else {
-      setPending((p) => [...p, ...ok.map((file) => ({ key: `${file.name}-${file.size}-${Math.random()}`, file, url: URL.createObjectURL(file) }))])
+    } finally {
+      setPhotoBusy(false)
+      setPhotoStatus('')
     }
   }
 
@@ -257,7 +280,7 @@ function FormBody({ listing }) {
         const created = await adminApi.createListing(payload)
         if (pending.length) {
           try {
-            await adminApi.uploadPhotos(created.id, pending.map((p) => p.file))
+            for (const p of pending) await adminApi.uploadPhotos(created.id, [p.file]) // one per request
           } catch (err) {
             notify(`${created.ref_code} was saved, but the photos failed: ${err.message} Add them below.`, 'error')
             navigate(`/admin/listings/${created.id}`, { replace: true })
@@ -510,7 +533,7 @@ function FormBody({ listing }) {
         <section className="panel" aria-labelledby={id('s6')}>
           <h2 id={id('s6')}>Photos</h2>
           <p className="hint">
-            jpg, png or webp, up to {MAX_MB} MB each. The <strong>cover</strong> photo is the first thing visitors see. Drag photos to reorder, or use the arrow buttons.
+            jpg, png or webp. Large phone photos are shrunk automatically before they upload. The <strong>cover</strong> photo is the first thing visitors see. Drag photos to reorder, or use the arrow buttons.
             {!isEdit && ' Photos are uploaded when you save the property.'}
           </p>
 
@@ -541,7 +564,7 @@ function FormBody({ listing }) {
                   e.target.value = ''
                 }}
               />
-              <span>{photoBusy ? 'Uploading…' : 'Choose photos'}</span>
+              <span>{photoBusy ? photoStatus || 'Working…' : 'Choose photos'}</span>
             </label>
           </div>
 
@@ -561,7 +584,7 @@ function FormBody({ listing }) {
             Cancel
           </Link>
           <button type="submit" className="btn btn-primary" disabled={saving}>
-            {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Add property'}
+            {saving ? (pending.length ? 'Saving and uploading photos…' : 'Saving…') : isEdit ? 'Save changes' : 'Add property'}
           </button>
         </div>
       </form>

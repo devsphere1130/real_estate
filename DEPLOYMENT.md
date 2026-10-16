@@ -33,7 +33,7 @@ postgresql+psycopg://USER:PASSWORD@HOST:5432/DBNAME?sslmode=require
 | `CORS_ORIGINS` | your website address exactly, e.g. `https://www.yourdomain.com` |
 | `DOCS_ENABLED` | `false` |
 | `TRUST_PROXY_HEADERS` | `true` if the host puts a proxy in front of the app (most do), otherwise `false` |
-| `UPLOAD_DIR` | a folder on **persistent** storage (see the warning below) |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | from your Cloudinary dashboard (see "Photos: Cloudinary" below) |
 | `SITE_URL` | `https://www.yourdomain.com` |
 
 Never reuse your local `.env` or `JWT_SECRET` in production.
@@ -58,12 +58,29 @@ Check `https://YOUR-API/api/health` returns `{"status":"ok"}`.
 Log in at your website's `/admin`, add a property with a photo, then send a test enquiry from the public
 site and confirm it appears under Leads.
 
-### Photos: choose where they live
-Photos are saved to `UPLOAD_DIR` and served at `/uploads/...`. Many hosts have **temporary disks that are
-wiped on every deploy**, which would delete your photos. Either:
-- attach a **persistent disk/volume** and point `UPLOAD_DIR` at it, **or**
-- switch to cloud storage (S3, Cloudinary, ...) by rewriting `backend/app/services/storage.py`. It is the only
-  file that knows where photos are kept (`save`, `delete`, `url`), so nothing else changes.
+### Photos: Cloudinary
+Hosts such as Vercel have **temporary disks that are wiped on every deploy**, so photos must not be stored on the
+server. The backend can store them on **Cloudinary** (free plan available) instead:
+
+1. Create an account at cloudinary.com. In the **Dashboard** copy your **Cloud name**, **API Key** and **API Secret**.
+2. Add these to the backend's environment variables on your host (never put the secret in the frontend):
+   ```
+   CLOUDINARY_CLOUD_NAME=your-cloud-name
+   CLOUDINARY_API_KEY=your-api-key
+   CLOUDINARY_API_SECRET=your-api-secret
+   ```
+   (or the single line `CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME`). Optional:
+   `CLOUDINARY_FOLDER=real-estate/properties`. `STORAGE_BACKEND` can stay at `auto`, which uses Cloudinary whenever the
+   keys are present. Set it to `cloudinary` if you want the app to refuse to start when the keys are missing.
+3. Redeploy, log in to `/admin` and add a photo to a property. It should appear in the Cloudinary **Media Library**
+   under `real-estate/properties`, and the photo address on the website starts with `https://res.cloudinary.com/`.
+   You can also test from the backend folder with `python -m scripts.check_cloudinary`.
+4. Photos you uploaded **before** switching on Cloudinary still live on the old server disk. Move them with
+   `python -m scripts.migrate_photos_to_cloudinary --dry-run` and then without `--dry-run`, run on the machine that
+   has those files (pointing `DATABASE_URL` at the live database). The old files are kept unless you add `--delete-local`.
+
+Only `backend/app/services/storage.py` knows where photos are kept, so the Add Property form and the rest of the
+admin panel are unchanged.
 
 ### Backups
 Back up the PostgreSQL database (most hosts offer automatic backups) and the photo storage.
@@ -110,6 +127,6 @@ This creates `frontend/dist/`.
 - [ ] Sample properties (DS-101 to DS-108, "Jaipur") deleted or replaced with real ones
 - [ ] New `JWT_SECRET`, `DOCS_ENABLED=false`, `CORS_ORIGINS` set to the real website
 - [ ] Admin created with a strong password; can log in at `/admin`
-- [ ] Photos stored on persistent storage
+- [ ] Cloudinary keys set; a test photo uploads and shows on the website
 - [ ] Test enquiry received, and the WhatsApp button opens with the right message
 - [ ] Database backups switched on

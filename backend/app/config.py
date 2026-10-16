@@ -1,6 +1,7 @@
 from functools import lru_cache
 import os
 from pathlib import Path
+from urllib.parse import unquote, urlparse
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -21,6 +22,26 @@ class Settings(BaseSettings):
     docs_enabled: bool = True
     timezone: str = "Asia/Kolkata"
     site_url: str = "http://localhost:5173"
+
+    # Where listing photos are stored: "local" (the uploads folder), "cloudinary", or "auto"
+    # (Cloudinary when its credentials are set, otherwise local).
+    storage_backend: str = "auto"
+    cloudinary_url: str = ""  # cloudinary://API_KEY:API_SECRET@CLOUD_NAME (as shown in the Cloudinary dashboard)
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
+    cloudinary_folder: str = "real-estate/properties"
+
+    @property
+    def cloudinary_credentials(self) -> tuple[str, str, str] | None:
+        """(cloud name, API key, API secret) from CLOUDINARY_URL or the three separate variables."""
+        if self.cloudinary_url.startswith("cloudinary://"):
+            parsed = urlparse(self.cloudinary_url)
+            if parsed.hostname and parsed.username and parsed.password:
+                return parsed.hostname, unquote(parsed.username), unquote(parsed.password)
+        if self.cloudinary_cloud_name and self.cloudinary_api_key and self.cloudinary_api_secret:
+            return self.cloudinary_cloud_name, self.cloudinary_api_key, self.cloudinary_api_secret
+        return None
 
     @property
     def sqlalchemy_database_url(self) -> str:

@@ -42,7 +42,9 @@ uvicorn app.main:app --reload   # API on http://127.0.0.1:8000, docs on /docs
 | `JWT_SECRET` | Long random secret that signs login tokens. Never share or commit it. |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | How long an admin login lasts (default 480 = 8 hours) |
 | `CORS_ORIGINS` | Website addresses allowed to call the API, comma separated |
-| `UPLOAD_DIR`, `MAX_UPLOAD_MB` | Where photos are saved and the size limit (default 8 MB) |
+| `UPLOAD_DIR`, `MAX_UPLOAD_MB` | Where photos are saved locally and the size limit (default 8 MB) |
+| `STORAGE_BACKEND` | `auto` (default: Cloudinary when its keys are set, otherwise the local uploads folder), `local` or `cloudinary` |
+| `CLOUDINARY_URL` or `CLOUDINARY_CLOUD_NAME` + `CLOUDINARY_API_KEY` + `CLOUDINARY_API_SECRET` | Cloudinary keys from its dashboard. With these set, new photos go to Cloudinary (folder `CLOUDINARY_FOLDER`) |
 | `LEAD_RATE_LIMIT`, `LEAD_RATE_WINDOW_SECONDS` | Enquiries allowed per visitor address (default 5 per 10 minutes) |
 | `TRUST_PROXY_HEADERS` | Set `true` only behind a reverse proxy you control |
 | `DOCS_ENABLED` | Show `/docs`. Set `false` in production |
@@ -139,7 +141,9 @@ Admin (JWT): `POST /api/admin/login`, `GET /api/admin/me`, `/api/admin/listings`
 `/api/admin/listings/{id}/photos` (upload, `PUT /order`, `PATCH /{photo_id}/cover`, `DELETE /{photo_id}`),
 `/api/admin/leads` (GET, PATCH, DELETE), `GET /api/admin/stats`.
 
-Photo storage lives in one module, `backend/app/services/storage.py`, so it can be swapped for cloud storage.
+Photo storage lives in one module, `backend/app/services/storage.py`. It stores photos in the local `uploads` folder or on
+Cloudinary (see `DEPLOYMENT.md`). Useful scripts: `python -m scripts.check_cloudinary` (test the keys) and
+`python -m scripts.migrate_photos_to_cloudinary` (move older local photos to Cloudinary).
 
 ## Security notes
 

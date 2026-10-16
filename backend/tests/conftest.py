@@ -8,6 +8,10 @@ os.environ["DATABASE_URL"] = f"sqlite:///{(_tmp / 'test.db').as_posix()}"
 os.environ["JWT_SECRET"] = "test-secret-not-for-production-0123456789"
 os.environ["UPLOAD_DIR"] = str(_tmp / "uploads")
 os.environ["LEAD_RATE_LIMIT"] = "1000"
+# Never touch the real Cloudinary account from tests, even if backend/.env contains its keys.
+os.environ["STORAGE_BACKEND"] = "local"
+for _name in ("CLOUDINARY_URL", "CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"):
+    os.environ[_name] = ""
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
